@@ -23,7 +23,7 @@ const (
 
 var (
 	headerStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("147")).Bold(true)
-	selectedGroupStyle = lipgloss.NewStyle().Background(lipgloss.Color("57")).Foreground(lipgloss.Color("231")).Bold(true)
+	selectedGroupStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("255")).Bold(true)
 	normalStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
 	activeProxyStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("86")).Bold(true)
 	activeProxyMarkStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("208")).Bold(true)
