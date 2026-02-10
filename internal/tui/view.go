@@ -43,15 +43,15 @@ func (m Model) View() string {
 			continue
 		}
 
-		// Pad group name to uniform display width
+		// Pad group name to uniform display width with 3 spaces on each side
 		currentWidth := lipgloss.Width(group)
-		paddedGroup := group + strings.Repeat(" ", maxGroupWidth-currentWidth)
+		paddedGroup := "   " + group + strings.Repeat(" ", maxGroupWidth-currentWidth) + "   "
 
 		var groupLabel string
 		if i == m.CurrentIdx {
-			groupLabel = selectedGroupStyle.Render("● " + paddedGroup)
+			groupLabel = selectedGroupStyle.Render(paddedGroup)
 		} else {
-			groupLabel = normalGroupStyle.Render("○ " + paddedGroup)
+			groupLabel = normalGroupStyle.Render(paddedGroup)
 		}
 		s += groupLabel + "\n"
 
