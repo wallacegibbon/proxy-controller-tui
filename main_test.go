@@ -93,12 +93,12 @@ func TestViewCursor(t *testing.T) {
 	out := m.View()
 	t.Logf("View output:\n%s", out)
 	// Check that cursor marker appears
-	if !strings.Contains(out, "[▶]") {
-		t.Errorf("Expected cursor marker [▶] in output, got:\n%s", out)
+	if !strings.Contains(out, ">  ") {
+		t.Errorf("Expected cursor marker '>  ' in output, got:\n%s", out)
 	}
 	// Check that active proxy marker appears
-	if !strings.Contains(out, "◆") {
-		t.Errorf("Expected active proxy marker ◆ in output, got:\n%s", out)
+	if !strings.Contains(out, " ● Proxy-1") {
+		t.Errorf("Expected active proxy marker ' ● Proxy-1' in output, got:\n%s", out)
 	}
 }
 func TestViewCursorOnActive(t *testing.T) {
@@ -118,15 +118,12 @@ func TestViewCursorOnActive(t *testing.T) {
 	}
 	out := m.View()
 	t.Logf("View output:\n%s", out)
-	// Check that both markers appear when cursor is on active proxy
-	if !strings.Contains(out, "▶") {
-		t.Errorf("Expected cursor marker ▶ in output, got:\n%s", out)
+	// Check that combined marker appears when cursor is on active proxy
+	if !strings.Contains(out, ">● Proxy-1") {
+		t.Errorf("Expected combined marker '>● Proxy-1' when cursor is on active proxy, got:\n%s", out)
 	}
-	if !strings.Contains(out, "◆") {
-		t.Errorf("Expected active proxy marker ◆ in output, got:\n%s", out)
-	}
-	// Check that the combined marker appears on the same line
-	if !strings.Contains(out, "[▶ ◆] Proxy-1") {
-		t.Errorf("Expected combined marker '[▶ ◆] Proxy-1' when cursor is on active proxy, got:\n%s", out)
+	// Check that active proxy marker appears
+	if !strings.Contains(out, "●") {
+		t.Errorf("Expected active proxy marker ● in output, got:\n%s", out)
 	}
 }

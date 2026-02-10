@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -19,10 +20,15 @@ const (
 )
 
 var (
-	headerStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("62")).Bold(true)
-	selectedGroupStyle = lipgloss.NewStyle().Background(lipgloss.Color("236")).Foreground(lipgloss.Color("255")).Bold(true)
-	normalStyle        = lipgloss.NewStyle()
-	helpStyle          = lipgloss.NewStyle().Faint(true)
+	headerStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("147")).Bold(true)
+	selectedGroupStyle = lipgloss.NewStyle().Background(lipgloss.Color("57")).Foreground(lipgloss.Color("231")).Bold(true)
+	normalStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
+	activeProxyStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("86")).Bold(true)
+	cursorStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("51")).Bold(true)
+	selectedStyle      = lipgloss.NewStyle().Background(lipgloss.Color("238")).Foreground(lipgloss.Color("255"))
+	helpStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
+	borderStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("238"))
+	separatorStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 )
 
 func min(a, b int) int {
@@ -98,10 +104,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.loading = false
 		m.proxies = msg.proxies
 		m.groups = msg.groups
-		m.currentIdx = 0
-		// Set cursor to the active proxy in the first group
-		if len(m.groups) > 0 {
-			if proxy, ok := m.proxies[m.groups[0]]; ok {
+		// Ensure currentIdx is valid after reload
+		if m.currentIdx >= len(m.groups) {
+			m.currentIdx = 0
+		}
+		// Set cursor to the active proxy in the current group
+		if len(m.groups) > 0 && m.currentIdx < len(m.groups) {
+			if proxy, ok := m.proxies[m.groups[m.currentIdx]]; ok {
 				cursorFound := false
 				for i, p := range proxy.All {
 					if p == proxy.Now {
@@ -115,6 +124,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+		m.viewportOffset = 0
 		return m, nil
 
 	case tea.KeyMsg:
@@ -194,6 +204,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.err = err
 						return m, nil
 					}
+					// Cursor is already at the right position, just reload
 					return m, loadProxiesCmd(m.client)
 				}
 			}
@@ -305,21 +316,25 @@ func (m *model) adjustViewport() {
 }
 
 func (m model) View() string {
-
 	if m.loading {
-		return "Loading proxies from Clash...\n"
+		return separatorStyle.Render("═══════════════════════════════════════") + "\n" +
+			headerStyle.Render("  Loading proxies...")
 	}
 
 	if m.err != nil {
-		return fmt.Sprintf("Error: %v\n\nPress 'r' to retry, 'q' to quit\n", m.err)
+		return separatorStyle.Render("═══════════════════════════════════════") + "\n" +
+			headerStyle.Render("  Error") + "\n" +
+			fmt.Sprintf("  %v\n", m.err) +
+			helpStyle.Render("  Press [r] retry, [q] quit")
 	}
 
 	if len(m.groups) == 0 {
-		return "No proxy groups found. Press 'r' to refresh, 'q' to quit\n"
+		return separatorStyle.Render("═══════════════════════════════════════") + "\n" +
+			headerStyle.Render("  No proxy groups found") + "\n" +
+			helpStyle.Render("  Press [r] refresh, [q] quit")
 	}
 
 	var s string
-	s += headerStyle.Render("Clash Proxy Controller") + "\n\n"
 
 	for i, group := range m.groups {
 		proxy, ok := m.proxies[group]
@@ -327,17 +342,17 @@ func (m model) View() string {
 			continue
 		}
 
+		var groupLabel string
 		if i == m.currentIdx {
-			s += selectedGroupStyle.Render(fmt.Sprintf("▸ %s", group)) + "\n"
+			groupLabel = selectedGroupStyle.Render("● " + group)
 		} else {
-			s += normalStyle.Render(fmt.Sprintf("  %s", group)) + "\n"
+			groupLabel = normalStyle.Render("○ " + group)
 		}
+		s += groupLabel + "\n"
 
 		if i == m.currentIdx {
-			// Only render visible proxies based on viewport offset
 			visibleProxies := proxy.All
 			if len(proxy.All) > maxVisibleProxies {
-				// Calculate visible range
 				startIdx := m.viewportOffset
 				if startIdx < 0 {
 					startIdx = 0
@@ -351,35 +366,27 @@ func (m model) View() string {
 
 			for j, p := range visibleProxies {
 				actualIdx := j + m.viewportOffset
+				var line string
 				if actualIdx == m.cursor && p == proxy.Now {
-					s += "  [▶ ◆] " + p + "\n"
+					line = cursorStyle.Render(">● ") + activeProxyStyle.Render(p)
 				} else if actualIdx == m.cursor {
-					s += "  [▶] " + p + "\n"
+					line = cursorStyle.Render(">  ") + p
 				} else if p == proxy.Now {
-					s += "     ◆ " + p + "\n"
+					line = " ● " + activeProxyStyle.Render(p)
 				} else {
-					s += "        " + p + "\n"
+					line = "   " + normalStyle.Render(p)
 				}
+				s += line + "\n"
 			}
 
-			// Show scroll indicator if there are more proxies
 			if len(proxy.All) > maxVisibleProxies {
-				s += helpStyle.Render(fmt.Sprintf("    (%d-%d / %d)", m.viewportOffset+1,
-					min(m.viewportOffset+maxVisibleProxies, len(proxy.All)), len(proxy.All))) + "\n"
+				s += helpStyle.Render("  " + strings.Repeat("-", 20) + fmt.Sprintf(" %d/%d ", len(proxy.All), len(proxy.All))) + "\n"
 			}
-		}
-
-		if i < len(m.groups)-1 {
-			s += "\n"
 		}
 	}
 
-	s += "\n"
-	s += helpStyle.Render("Controls:\n")
-	s += helpStyle.Render("  ←/h : 上一个组     →/l : 下一个组\n")
-	s += helpStyle.Render("  ↑/k : 上一个代理   ↓/j : 下一个代理\n")
-	s += helpStyle.Render("  Enter: 选择代理      r : 刷新\n")
-	s += helpStyle.Render("  q : 退出\n")
+	s += separatorStyle.Render("═══════════════════════════════════════") + "\n"
+	s += helpStyle.Render(" [←h]Prev [→l]Next  [↑k]↑ [↓j]↓  [Ent]Select  [r]Reload  [q]Quit")
 
 	return s
 }
