@@ -39,6 +39,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		m.ViewportOffset = 0
+		m.adjustViewport()
 		return m, nil
 
 	case tea.KeyMsg:
