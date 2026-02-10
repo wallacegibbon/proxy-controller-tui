@@ -1,4 +1,4 @@
-# Project State - Last updated: 2026-02-10 21:10
+# Project State - Last updated: 2026-02-10
 
 ## Status
 **Complete and production-ready.**
@@ -20,9 +20,13 @@ go install github.com/wallacegibbon/proxy-tui-controller@latest
 
 ## Features
 - Compact, modern TUI interface for Clash/Mihomo proxy management
-- Enhanced visual design with improved color scheme and styling
-- Cursor properly aligned with active proxy position
-- Viewport scrolling (20 items max) for large proxy lists
+- Small terminal support with dynamic viewport and compact help text
+- Beautiful group styling with dark blue background color
+- Proper multi-byte character support (Chinese/English mixed names)
+- Active proxy marked with `>` in orange (cursor: `>` in cyan)
+- Inline position indicator (x/xx) following cursor
+- Uniform group name padding using lipgloss.Width() for proper display
+- Viewport automatically adjusts based on terminal height
 - Mihomo API authentication via `MIHOMO_SECRET`
 - Vim-style navigation (h/j/k/l) and arrow keys
 - Mock mode for testing (`MOCK_CLASH=1`)
@@ -37,3 +41,12 @@ go install github.com/wallacegibbon/proxy-tui-controller@latest
 - `↑/k` / `↓/j`: Proxy navigation
 - `Enter`: Select proxy
 - `r`: Refresh, `q`: Quit
+
+## UI Design
+- **Groups**: Dark blue background (color 60), selected group in white, 3-space padding
+- **Proxies**: 
+  - Active proxy: `>` marker in orange (color 208)
+  - Cursor: `>` marker in cyan (color 51), or `>>` when on active proxy
+  - Normal: No marker
+- **Position indicator**: `(x/xx)` shown next to cursor when scrolling needed
+- **Help**: Compact format on terminals < 15 rows, full format otherwise

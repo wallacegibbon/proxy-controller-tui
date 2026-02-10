@@ -32,6 +32,14 @@ MOCK_CLASH=1 proxy-tui-controller
 - `Enter`: Select proxy
 - `r`: Refresh, `q`: Quit
 
+## UI Features
+- Small terminal support with dynamic viewport calculation
+- Beautiful dark blue background for all groups
+- Active proxy marked with `>` (orange), cursor marked with `>` (cyan)
+- Inline position indicator `(x/xx)` shows current cursor position
+- Proper multi-byte character support for Chinese/English names
+- Compact help text on terminals < 15 rows
+
 ## Agent Instructions
 - **Read STATE.md** at the start of every conversation
 - **Update STATE.md** after completing any meaningful work (features, bug fixes, etc.)
