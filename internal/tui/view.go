@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"strings"
 )
 
 func (m Model) View() string {
@@ -23,6 +24,14 @@ func (m Model) View() string {
 			helpStyle.Render("  Press [r] refresh, [q] quit")
 	}
 
+	// Calculate max group name length for uniform padding
+	maxGroupLen := 0
+	for _, group := range m.Groups {
+		if len(group) > maxGroupLen {
+			maxGroupLen = len(group)
+		}
+	}
+
 	var s string
 
 	for i, group := range m.Groups {
@@ -31,11 +40,14 @@ func (m Model) View() string {
 			continue
 		}
 
+		// Pad group name to uniform length
+		paddedGroup := group + strings.Repeat(" ", maxGroupLen-len(group))
+
 		var groupLabel string
 		if i == m.CurrentIdx {
-			groupLabel = selectedGroupStyle.Render("● " + group)
+			groupLabel = selectedGroupStyle.Render("● " + paddedGroup)
 		} else {
-			groupLabel = normalStyle.Render("○ " + group)
+			groupLabel = normalGroupStyle.Render("○ " + paddedGroup)
 		}
 		s += groupLabel + "\n"
 
