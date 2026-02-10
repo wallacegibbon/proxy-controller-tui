@@ -3,7 +3,7 @@ package tui
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/wallacegibbon/proxy-tui-controller/internal/clash"
+	"github.com/wallacegibbon/proxy-controller-tui/internal/clash"
 )
 
 type errMsg error

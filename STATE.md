@@ -6,8 +6,8 @@
 All features implemented and tested. Application successfully deployed to GitHub and Gitee.
 
 ## Project Structure
-- Module: `github.com/wallacegibbon/proxy-tui-controller`
-- Binary: `proxy-tui-controller`
+- Module: `github.com/wallacegibbon/proxy-controller-tui`
+- Binary: `proxy-controller-tui`
 - Project layout:
   - `main.go` - Application entry point
   - `internal/clash/` - Clash/Mihomo API client
@@ -15,7 +15,7 @@ All features implemented and tested. Application successfully deployed to GitHub
 
 ## Installation
 ```bash
-go install github.com/wallacegibbon/proxy-tui-controller@latest
+go install github.com/wallacegibbon/proxy-controller-tui@latest
 ```
 
 ## Features

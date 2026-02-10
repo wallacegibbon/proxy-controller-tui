@@ -17,15 +17,15 @@ A modern, compact terminal user interface (TUI) for managing Clash/Mihomo proxy 
 ### From Source (Recommended)
 
 ```bash
-go install github.com/wallacegibbon/proxy-tui-controller@latest
+go install github.com/wallacegibbon/proxy-controller-tui@latest
 ```
 
 ### Building from Source
 
 ```bash
 # Clone the repository
-git clone git@github.com:wallacegibbon/proxy-tui-controller.git
-cd proxy-tui-controller
+git clone git@github.com:wallacegibbon/proxy-controller-tui.git
+cd proxy-controller-tui
 
 # Build binary
 go build
@@ -44,13 +44,13 @@ go build
 
 ```bash
 # With Mihomo secret
-MIHOMO_SECRET=YOUR_SECRET proxy-tui-controller
+MIHOMO_SECRET=YOUR_SECRET proxy-controller-tui
 
 # Standard Clash
-proxy-tui-controller
+proxy-controller-tui
 
 # Mock mode for testing (no proxy server required)
-MOCK_CLASH=1 proxy-tui-controller
+MOCK_CLASH=1 proxy-controller-tui
 ```
 
 ## Configuration
@@ -90,15 +90,15 @@ go test ./...
 go run .
 
 # Build for different platforms
-GOOS=linux GOARCH=amd64 go build -o proxy-tui-controller-linux
-GOOS=darwin GOARCH=amd64 go build -o proxy-tui-controller-mac
-GOOS=windows GOARCH=amd64 go build -o proxy-tui-controller.exe
+GOOS=linux GOARCH=amd64 go build -o proxy-controller-tui-linux
+GOOS=darwin GOARCH=amd64 go build -o proxy-controller-tui-mac
+GOOS=windows GOARCH=amd64 go build -o proxy-controller-tui.exe
 ```
 
 ## Project Structure
 
 ```
-proxy-tui-controller/
+proxy-controller-tui/
 ├── main.go                      # Application entry point
 ├── internal/
 │   ├── clash/                   # Clash/Mihomo API client
@@ -130,7 +130,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Links
 
-- [GitHub Repository](https://github.com/wallacegibbon/proxy-tui-controller)
-- [Gitee Repository](https://gitee.com/wallacegibbon/proxy-tui-controller)
+- [GitHub Repository](https://github.com/wallacegibbon/proxy-controller-tui)
+- [Gitee Repository](https://gitee.com/wallacegibbon/proxy-controller-tui)
 - [Clash Documentation](https://github.com/Dreamacro/clash)
 - [Mihomo Documentation](https://github.com/MetaCubeX/mihomo)

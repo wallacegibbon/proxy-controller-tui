@@ -3,27 +3,27 @@
 Go TUI application for managing Clash/Mihomo proxy services.
 
 ## Project
-- Module: `github.com/wallacegibbon/proxy-tui-controller`
-- Binary: `proxy-tui-controller`
+- Module: `github.com/wallacegibbon/proxy-controller-tui`
+- Binary: `proxy-controller-tui`
 - Connects to Clash/Mihomo RESTful API (`http://127.0.0.1:9090`)
 - Supports proxy group selection (Selector and URLTest types)
 - Built with bubbletea and lipgloss (charmbracelet)
 
 ## Installation
 ```bash
-go install github.com/wallacegibbon/proxy-tui-controller@latest
+go install github.com/wallacegibbon/proxy-controller-tui@latest
 ```
 
 ## Usage
 ```bash
 # With Mihomo secret
-MIHOMO_SECRET=YOUR_SECRET proxy-tui-controller
+MIHOMO_SECRET=YOUR_SECRET proxy-controller-tui
 
 # Standard Clash
-proxy-tui-controller
+proxy-controller-tui
 
 # Mock mode for testing
-MOCK_CLASH=1 proxy-tui-controller
+MOCK_CLASH=1 proxy-controller-tui
 ```
 
 ## Controls

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wallacegibbon/proxy-tui-controller/internal/clash"
+	"github.com/wallacegibbon/proxy-controller-tui/internal/clash"
 )
 
 func TestCursorMovement(t *testing.T) {
