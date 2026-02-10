@@ -3,6 +3,8 @@ package tui
 import (
 	"fmt"
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (m Model) View() string {
@@ -24,11 +26,12 @@ func (m Model) View() string {
 			helpStyle.Render("  Press [r] refresh, [q] quit")
 	}
 
-	// Calculate max group name length for uniform padding
-	maxGroupLen := 0
+	// Calculate max group name display width for uniform padding
+	maxGroupWidth := 0
 	for _, group := range m.Groups {
-		if len(group) > maxGroupLen {
-			maxGroupLen = len(group)
+		groupWidth := lipgloss.Width(group)
+		if groupWidth > maxGroupWidth {
+			maxGroupWidth = groupWidth
 		}
 	}
 
@@ -40,8 +43,9 @@ func (m Model) View() string {
 			continue
 		}
 
-		// Pad group name to uniform length
-		paddedGroup := group + strings.Repeat(" ", maxGroupLen-len(group))
+		// Pad group name to uniform display width
+		currentWidth := lipgloss.Width(group)
+		paddedGroup := group + strings.Repeat(" ", maxGroupWidth-currentWidth)
 
 		var groupLabel string
 		if i == m.CurrentIdx {
