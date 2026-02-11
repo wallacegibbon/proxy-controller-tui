@@ -1,4 +1,4 @@
-# Project State - Last updated: 2026-02-10
+# Project State - Last updated: 2026-02-11
 
 ## Status
 **Complete and production-ready.**
@@ -19,6 +19,7 @@ go install github.com/wallacegibbon/proxy-controller-tui@latest
 ```
 
 ## Features
+- Uses alternate screen buffer for proper terminal cleanup on exit
 - Compact, modern TUI interface for Clash/Mihomo proxy management
 - Small terminal support with dynamic viewport and compact help text
 - Beautiful group styling with dark blue background color

@@ -33,6 +33,7 @@ MOCK_CLASH=1 proxy-controller-tui
 - `r`: Refresh, `q`: Quit
 
 ## UI Features
+- Uses alternate screen buffer for proper display cleanup on exit
 - Small terminal support with dynamic viewport calculation
 - Beautiful dark blue background for all groups
 - Active proxy marked with `>` (orange), cursor marked with `>` (cyan)
