@@ -168,3 +168,79 @@ func TestHelpAtBottomSmallTerminal(t *testing.T) {
 		t.Errorf("Compact help message not on last line, got: %q", lastLine)
 	}
 }
+
+func TestLayoutWithMultipleGroups(t *testing.T) {
+	m := Model{
+		Proxies: map[string]clash.Proxy{
+			"Proxy": {
+				Name: "Proxy",
+				Type: "Selector",
+				Now:  "Proxy-1",
+				All:  []string{"Proxy-1", "Proxy-2", "Proxy-3"},
+			},
+			"Auto": {
+				Name: "Auto",
+				Type: "URLTest",
+				Now:  "Auto-2",
+				All:  []string{"Auto-1", "Auto-2", "Auto-3", "Auto-4"},
+			},
+			"Group3": {
+				Name: "Group3",
+				Type: "Selector",
+				Now:  "Proxy-1",
+				All:  []string{"Proxy-1", "Proxy-2"},
+			},
+		},
+		Groups:     []string{"Proxy", "Auto", "Group3"},
+		CurrentIdx: 0, // Proxy is selected
+		Cursor:     1,
+		Loading:    false,
+		Height:     15,
+	}
+	
+	out := m.View()
+	lines := strings.Split(out, "\n")
+	
+	// Output should not exceed terminal height
+	if len(lines) > m.Height {
+		t.Errorf("Output exceeds terminal height: got %d lines, terminal height is %d", len(lines), m.Height)
+	}
+	
+	// Help should be on last line
+	lastLine := lines[len(lines)-1]
+	if !strings.Contains(lastLine, "[q]Quit") {
+		t.Errorf("Help message not on last line, got: %q", lastLine)
+	}
+	
+	// Unselected groups should be near bottom (before help)
+	// Last non-help line should be "Group3"
+	secondToLastLine := lines[len(lines)-2]
+	if !strings.Contains(secondToLastLine, "Group3") {
+		t.Errorf("Expected last unselected group 'Group3' to be near bottom, got: %q", secondToLastLine)
+	}
+	
+	// Selected group "Proxy" should be at top
+	firstLine := lines[0]
+	if !strings.Contains(firstLine, "Proxy") {
+		t.Errorf("Expected selected group 'Proxy' to be first, got: %q", firstLine)
+	}
+	
+	// Auto should appear before Group3 (in order)
+	foundAuto := false
+	foundGroup3 := false
+	for _, line := range lines {
+		if strings.Contains(line, "   Auto   ") {
+			foundAuto = true
+		}
+		if strings.Contains(line, "   Group3  ") {
+			foundGroup3 = true
+			if !foundAuto {
+				t.Errorf("Expected 'Auto' to appear before 'Group3' in output")
+			}
+		}
+	}
+	
+	if !foundAuto || !foundGroup3 {
+		t.Errorf("Expected both unselected groups 'Auto' and 'Group3' to be in output")
+	}
+}

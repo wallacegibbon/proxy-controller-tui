@@ -44,10 +44,12 @@ go install github.com/wallacegibbon/proxy-controller-tui@latest
 - `r`: Refresh, `q`: Quit
 
 ## UI Design
+- **Layout**: Selected group and its proxies at top, unselected groups at bottom (above help line)
 - **Groups**: Turquoise background (color 45), selected group in white, 3-space padding
-- **Proxies**: 
+  - Unselected groups show current proxy in `[proxy_name]` format
+- **Proxies**:
   - Active proxy: `>` marker in orange (color 208)
   - Cursor: `>` marker in cyan (color 51), or `>>` when on active proxy
   - Normal: No marker
 - **Position indicator**: `(x/xx)` shown next to cursor when scrolling needed
-- **Help**: Compact format on terminals < 15 rows, full format otherwise
+- **Help**: Fixed at bottom of terminal, compact format on terminals < 15 rows, full format otherwise

@@ -165,8 +165,9 @@ func (m *Model) adjustViewport() {
 	}
 
 	// Calculate max visible proxies based on terminal height
-	// Footer takes: help (1 row)
-	availableRows := m.Height - len(m.Groups) - minHelpRows
+	// Footer takes: help (1 row) + unselected groups (len(m.Groups)-1 rows) + selected group header (1 row)
+	unselectedGroupCount := len(m.Groups) - 1
+	availableRows := m.Height - unselectedGroupCount - minHelpRows - 1
 	if availableRows < 1 {
 		availableRows = 1
 	}
