@@ -39,6 +39,7 @@ MOCK_CLASH=1 proxy-controller-tui
 - Active proxy marked with `>` in orange (color 208), cursor marked with `>` in cyan (color 51), or `>>` when cursor is on active proxy
 - Inline position indicator `(x/xx)` shows current cursor position
 - Proper multi-byte character support for Chinese/English names
+- Group type displayed in parentheses after group name (e.g., "MyGroup (Selector)")
 - Help text fixed at bottom: `[←h]Prev [→l]Next  [↑k]↑ [↓j]↓  [Ent]Select  [r]Reload  [q]Quit`
 - Top group always on top line, no gaps between unselected groups
 - Bottom group directly above help line with proper padding distribution

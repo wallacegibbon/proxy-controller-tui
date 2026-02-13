@@ -206,18 +206,18 @@ func TestLayoutWithMultipleGroups(t *testing.T) {
 		t.Errorf("Help message not on last line, got: %q", lastLine)
 	}
 
-	// Groups should be in order (Proxy then Auto)
+	// Groups should be in order (Proxy then Auto) with types
 	foundProxy := false
 	foundAuto := false
 	for i, line := range lines {
-		if strings.Contains(line, "   Proxy   ") && foundProxy == false {
+		if strings.Contains(line, "Proxy") && strings.Contains(line, "(Selector)") && foundProxy == false {
 			foundProxy = true
 			// Next line(s) should be proxies
 			if i+1 < len(lines) && strings.Contains(lines[i+1], "Proxy-") {
 				// Good, proxies follow the group
 			}
 		}
-		if strings.Contains(line, "   Auto   ") && foundAuto == false {
+		if strings.Contains(line, "Auto") && strings.Contains(line, "(URLTest)") && foundAuto == false {
 			foundAuto = true
 			// Auto should appear after Proxy
 			if !foundProxy {

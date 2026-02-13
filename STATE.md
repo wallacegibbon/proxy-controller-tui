@@ -55,6 +55,7 @@ go install github.com/wallacegibbon/proxy-controller-tui@latest
 - **Groups**: Turquoise background (color 45), selected group in white, 3-space padding
   - Groups displayed in original order, navigating up/down moves through all groups
   - Selected group shows its proxies below it
+  - Group type displayed in parentheses after group name (e.g., "MyGroup (Selector)")
 - **Proxies**:
   - Active proxy: `>` marker in orange (color 208)
   - Cursor: `>` marker in cyan (color 51), or `>>` when on active proxy

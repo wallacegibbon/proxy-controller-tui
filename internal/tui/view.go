@@ -26,10 +26,15 @@ func (m Model) View() string {
 			helpStyle.Render("  Press [r] refresh, [q] quit")
 	}
 
-	// Calculate max group name display width for uniform padding
+	// Calculate max group name display width for uniform padding (including type)
 	maxGroupWidth := 0
 	for _, group := range m.Groups {
-		groupWidth := lipgloss.Width(group)
+		proxy, ok := m.Proxies[group]
+		groupWithType := group
+		if ok && proxy.Type != "" {
+			groupWithType = group + " (" + proxy.Type + ")"
+		}
+		groupWidth := lipgloss.Width(groupWithType)
 		if groupWidth > maxGroupWidth {
 			maxGroupWidth = groupWidth
 		}
@@ -73,8 +78,12 @@ func (m Model) View() string {
 		}
 
 		// Pad group name to uniform display width with 3 spaces on each side
-		currentWidth := lipgloss.Width(group)
-		paddedGroup := "   " + group + strings.Repeat(" ", maxGroupWidth-currentWidth) + "   "
+		groupWithType := group
+		if proxy.Type != "" {
+			groupWithType = group + " (" + proxy.Type + ")"
+		}
+		currentWidth := lipgloss.Width(groupWithType)
+		paddedGroup := "   " + groupWithType + strings.Repeat(" ", maxGroupWidth-currentWidth) + "   "
 
 		var groupLabel string
 		if i == m.CurrentIdx {
