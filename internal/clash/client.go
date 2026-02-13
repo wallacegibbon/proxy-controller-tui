@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sync"
 )
 
 const (
@@ -20,9 +21,11 @@ var (
 )
 
 type Client struct {
-	baseURL    string
-	secret     string
-	httpClient *http.Client
+	baseURL       string
+	secret        string
+	httpClient    *http.Client
+	mockProxies   map[string]Proxy
+	mockProxiesMu sync.RWMutex
 }
 
 type Proxy struct {
@@ -63,27 +66,36 @@ func (c *Client) addAuthHeader(req *http.Request) {
 
 func (c *Client) GetProxies() (*ProxiesResponse, error) {
 	if mockMode {
-		// Return mock data for testing
-		proxies := make(map[string]Proxy)
-		proxies["Proxy Group A"] = Proxy{
+		c.mockProxiesMu.RLock()
+		if c.mockProxies != nil {
+			defer c.mockProxiesMu.RUnlock()
+			return &ProxiesResponse{Proxies: c.mockProxies}, nil
+		}
+		c.mockProxiesMu.RUnlock()
+
+		// Initialize mock data for testing
+		c.mockProxiesMu.Lock()
+		defer c.mockProxiesMu.Unlock()
+		c.mockProxies = make(map[string]Proxy)
+		c.mockProxies["Proxy Group A"] = Proxy{
 			Name: "Proxy Group A",
 			Type: "Selector",
 			Now:  "Proxy-1",
 			All:  []string{"Proxy-1", "Proxy-2", "Proxy-3", "Proxy-4", "Proxy-5", "Proxy-6", "Proxy-7"},
 		}
-		proxies["Proxy Group B"] = Proxy{
+		c.mockProxies["Proxy Group B"] = Proxy{
 			Name: "Proxy Group B",
 			Type: "URLTest",
 			Now:  "Auto-2",
 			All:  []string{"Auto-1", "Auto-2", "Auto-3", "Auto-4", "Auto-5", "Auto-6"},
 		}
-		proxies["Proxy Group C"] = Proxy{
+		c.mockProxies["Proxy Group C"] = Proxy{
 			Name: "Proxy Group C",
 			Type: "Selector",
 			Now:  "Direct-1",
 			All:  []string{"Direct-1", "Direct-2", "Direct-3", "Direct-4", "Direct-5", "Direct-6", "Direct-7", "Direct-8"},
 		}
-		return &ProxiesResponse{Proxies: proxies}, nil
+		return &ProxiesResponse{Proxies: c.mockProxies}, nil
 	}
 
 	url := c.baseURL + proxiesPath
@@ -113,6 +125,23 @@ func (c *Client) GetProxies() (*ProxiesResponse, error) {
 }
 
 func (c *Client) SelectProxy(groupName, proxyName string) error {
+	if mockMode {
+		c.mockProxiesMu.Lock()
+		defer c.mockProxiesMu.Unlock()
+
+		if proxy, ok := c.mockProxies[groupName]; ok {
+			for _, p := range proxy.All {
+				if p == proxyName {
+					proxy.Now = proxyName
+					c.mockProxies[groupName] = proxy
+					return nil
+				}
+			}
+			return fmt.Errorf("proxy %s not found in group %s", proxyName, groupName)
+		}
+		return fmt.Errorf("group %s not found", groupName)
+	}
+
 	url := c.baseURL + proxiesPath + "/" + groupName
 
 	payload := map[string]string{

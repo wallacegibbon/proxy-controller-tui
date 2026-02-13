@@ -1,6 +1,9 @@
 package tui
 
 import (
+	"sort"
+	"time"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/wallacegibbon/proxy-controller-tui/internal/clash"
@@ -34,29 +37,31 @@ var (
 )
 
 type Model struct {
-	Client         *clash.Client
-	Proxies        map[string]clash.Proxy
-	Groups         []string
-	CurrentIdx     int
-	Cursor         int
-	Loading        bool
-	Err            error
-	ViewportOffset int
-	Height         int // Terminal height
+	Client          *clash.Client
+	Proxies         map[string]clash.Proxy
+	Groups          []string
+	CurrentIdx      int
+	Cursor          int
+	Loading         bool
+	Err             error
+	ViewportOffset  int
+	Height          int    // Terminal height
+	lastCursorProxy string // Track proxy name at cursor to restore position after reload
 }
 
 func InitialModel() Model {
 	client := clash.NewClient("")
 	return Model{
-		Client:         client,
-		Proxies:        make(map[string]clash.Proxy),
-		Groups:         make([]string, 0),
-		CurrentIdx:     0,
-		Cursor:         0,
-		Loading:        true,
-		Err:            nil,
-		ViewportOffset: 0,
-		Height:         24,
+		Client:          client,
+		Proxies:         make(map[string]clash.Proxy),
+		Groups:          make([]string, 0),
+		CurrentIdx:      0,
+		Cursor:          0,
+		Loading:         true,
+		Err:             nil,
+		ViewportOffset:  0,
+		Height:          24,
+		lastCursorProxy: "",
 	}
 }
 
@@ -73,6 +78,35 @@ func LoadProxiesCmd(client *clash.Client) tea.Cmd {
 				groups = append(groups, name)
 			}
 		}
+
+		// Sort groups alphabetically for consistent ordering
+		sort.Strings(groups)
+
+		return proxiesLoadedMsg{
+			proxies: proxies.Proxies,
+			groups:  groups,
+		}
+	}
+}
+
+func loadProxiesWithDelayCmd(client *clash.Client) tea.Cmd {
+	return func() tea.Msg {
+		time.Sleep(200 * time.Millisecond)
+
+		proxies, err := client.GetProxies()
+		if err != nil {
+			return errMsg(err)
+		}
+
+		groups := make([]string, 0)
+		for name, proxy := range proxies.Proxies {
+			if proxy.Type == "Selector" || proxy.Type == "URLTest" {
+				groups = append(groups, name)
+			}
+		}
+
+		// Sort groups alphabetically for consistent ordering
+		sort.Strings(groups)
 
 		return proxiesLoadedMsg{
 			proxies: proxies.Proxies,

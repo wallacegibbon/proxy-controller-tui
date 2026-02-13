@@ -1,4 +1,4 @@
-# Project State - Last updated: 2026-02-12
+# Project State - Last updated: 2026-02-13
 
 ## Status
 **Complete and production-ready.**
@@ -30,7 +30,14 @@ go install github.com/wallacegibbon/proxy-controller-tui@latest
 - Viewport automatically adjusts based on terminal height
 - Mihomo API authentication via `MIHOMO_SECRET`
 - Vim-style navigation (h/j/k/l) and arrow keys
-- Mock mode for testing (`MOCK_CLASH=1`)
+- Mock mode for testing (`MOCK_CLASH=1`) with proper state persistence
+- **Consistent group ordering**: Groups are sorted alphabetically regardless of API response order
+- **Smart cursor positioning**:
+  - On startup and group switches, cursor goes to the currently active proxy
+  - After manual navigation, cursor stays on the proxy you navigated to
+  - Preserved across reloads by tracking the proxy name at cursor
+- Only resets cursor to active proxy if the proxy you were on no longer exists
+- 200ms delay after PUT request to allow server to process selection before refreshing data
 
 ## Tech Stack
 - bubbletea - TUI framework

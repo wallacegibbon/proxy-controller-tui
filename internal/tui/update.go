@@ -25,17 +25,30 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if len(m.Groups) > 0 && m.CurrentIdx < len(m.Groups) {
 			if proxy, ok := m.Proxies[m.Groups[m.CurrentIdx]]; ok {
+				// Try to restore cursor position based on the proxy name we were on
 				cursorFound := false
-				for i, p := range proxy.All {
-					if p == proxy.Now {
-						m.Cursor = i
-						cursorFound = true
-						break
+				if m.lastCursorProxy != "" {
+					for i, p := range proxy.All {
+						if p == m.lastCursorProxy {
+							m.Cursor = i
+							cursorFound = true
+							break
+						}
 					}
 				}
-				if !cursorFound && len(proxy.All) > 0 {
-					m.Cursor = 0
+				// Fall back to active proxy if:
+				// 1. We couldn't find the last cursor proxy by name
+				// 2. OR this is the first load (lastCursorProxy is empty)
+				if !cursorFound {
+					for i, p := range proxy.All {
+						if p == proxy.Now {
+							m.Cursor = i
+							break
+						}
+					}
 				}
+				// Update lastCursorProxy to match the current cursor position
+				m.updateLastCursorProxy()
 			}
 		}
 		m.ViewportOffset = 0
@@ -54,6 +67,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if proxy, ok := m.Proxies[group]; ok && len(proxy.All) > 0 {
 					if m.Cursor > 0 {
 						m.Cursor--
+						m.updateLastCursorProxy()
 						m.adjustViewport()
 					}
 				}
@@ -66,6 +80,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if proxy, ok := m.Proxies[group]; ok && len(proxy.All) > 0 {
 					if m.Cursor < len(proxy.All)-1 {
 						m.Cursor++
+						m.updateLastCursorProxy()
 						m.adjustViewport()
 					}
 				}
@@ -87,7 +102,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.Err = err
 						return m, nil
 					}
-					return m, LoadProxiesCmd(m.Client)
+					return m, loadProxiesWithDelayCmd(m.Client)
 				}
 			}
 			return m, nil
@@ -112,6 +127,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if proxy, ok := m.Proxies[group]; ok && len(proxy.All) > 0 {
 					if m.Cursor > 0 {
 						m.Cursor--
+						m.updateLastCursorProxy()
 						m.adjustViewport()
 					}
 				}
@@ -123,6 +139,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if proxy, ok := m.Proxies[group]; ok && len(proxy.All) > 0 {
 					if m.Cursor < len(proxy.All)-1 {
 						m.Cursor++
+						m.updateLastCursorProxy()
 						m.adjustViewport()
 					}
 				}
@@ -142,16 +159,27 @@ func (m *Model) navigateGroup(direction int) (tea.Model, tea.Cmd) {
 			for i, p := range proxy.All {
 				if p == proxy.Now {
 					m.Cursor = i
+					m.updateLastCursorProxy()
 					break
 				}
 			}
 		} else {
 			m.Cursor = 0
+			m.lastCursorProxy = ""
 		}
 		m.ViewportOffset = 0
 		m.adjustViewport()
 	}
 	return *m, nil
+}
+
+func (m *Model) updateLastCursorProxy() {
+	if m.CurrentIdx < len(m.Groups) {
+		group := m.Groups[m.CurrentIdx]
+		if proxy, ok := m.Proxies[group]; ok && m.Cursor < len(proxy.All) {
+			m.lastCursorProxy = proxy.All[m.Cursor]
+		}
+	}
 }
 
 func (m *Model) adjustViewport() {
