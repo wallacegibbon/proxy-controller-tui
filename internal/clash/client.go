@@ -47,13 +47,16 @@ type ProxiesResponse struct {
 	Proxies map[string]Proxy `json:"proxies"`
 }
 
-func NewClient(baseURL string) *Client {
+func NewClient(baseURL, secret string) *Client {
 	if baseURL == "" {
 		baseURL = defaultClashURL
 	}
+	if secret == "" {
+		secret = apiSecret
+	}
 	return &Client{
 		baseURL:    baseURL,
-		secret:     apiSecret,
+		secret:     secret,
 		httpClient: &http.Client{},
 	}
 }
