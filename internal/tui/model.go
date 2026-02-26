@@ -6,7 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/wallacegibbon/proxy-controller-tui/internal/clash"
+	"github.com/randomradio/proxy-controller-tui/internal/clash"
 )
 
 type errMsg error

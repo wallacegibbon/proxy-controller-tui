@@ -6,7 +6,7 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/wallacegibbon/proxy-controller-tui/internal/tui"
+	"github.com/randomradio/proxy-controller-tui/internal/tui"
 )
 
 func main() {

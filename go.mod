@@ -1,6 +1,8 @@
-module github.com/wallacegibbon/proxy-controller-tui
+module github.com/randomradio/proxy-controller-tui
 
-go 1.25.6
+go 1.24.2
+
+toolchain go1.24.7
 
 require (
 	github.com/charmbracelet/bubbletea v1.3.10
