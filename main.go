@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	"github.com/wallacegibbon/proxy-controller-tui/internal/tui"
 )
 
@@ -17,8 +17,6 @@ func main() {
 
 	p := tea.NewProgram(
 		tui.InitialModel(),
-		tea.WithAltScreen(),
-		tea.WithMouseCellMotion(),
 	)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v", err)

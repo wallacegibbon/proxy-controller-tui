@@ -4,27 +4,34 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/wallacegibbon/proxy-controller-tui/internal/clash"
 )
 
-func (m Model) View() string {
+func (m Model) View() tea.View {
 	if m.Loading {
-		return separatorStyle.Render("═══════════════════════════════════════") + "\n" +
-			headerStyle.Render("  Loading proxies...")
+		return tea.NewView(
+			separatorStyle.Render("═══════════════════════════════════════") + "\n" +
+				headerStyle.Render("  Loading proxies..."),
+		)
 	}
 
 	if m.Err != nil {
-		return separatorStyle.Render("═══════════════════════════════════════") + "\n" +
-			headerStyle.Render("  Error") + "\n" +
-			fmt.Sprintf("  %v\n", m.Err) +
-			helpStyle.Render("  Press [r] retry, [q] quit")
+		return tea.NewView(
+			separatorStyle.Render("═══════════════════════════════════════") + "\n" +
+				headerStyle.Render("  Error") + "\n" +
+				fmt.Sprintf("  %v\n", m.Err) +
+				helpStyle.Render("  Press [r] retry, [q] quit"),
+		)
 	}
 
 	if len(m.Groups) == 0 {
-		return separatorStyle.Render("═══════════════════════════════════════") + "\n" +
-			headerStyle.Render("  No proxy groups found") + "\n" +
-			helpStyle.Render("  Press [r] refresh, [q] quit")
+		return tea.NewView(
+			separatorStyle.Render("═══════════════════════════════════════") + "\n" +
+				headerStyle.Render("  No proxy groups found") + "\n" +
+				helpStyle.Render("  Press [r] refresh, [q] quit"),
+		)
 	}
 
 	// Calculate max group name display width for uniform padding (including type)
@@ -191,5 +198,8 @@ func (m Model) View() string {
 	// Add help text at bottom
 	s += helpStyle.Render(" [←h]Prev [→l]Next  [↑k]↑ [↓j]↓  [Ent]Select  [r]Reload  [q]Quit")
 
-	return s
+	v := tea.NewView(s)
+	v.AltScreen = true
+	v.MouseMode = tea.MouseModeCellMotion
+	return v
 }

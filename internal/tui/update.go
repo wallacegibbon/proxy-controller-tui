@@ -1,7 +1,7 @@
 package tui
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -54,13 +54,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.adjustViewport()
 		return m, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		if m.Loading {
 			return m, nil
 		}
 
-		switch msg.Type {
-		case tea.KeyUp, tea.KeyCtrlK:
+		switch key := msg.Key(); {
+		case key.Code == tea.KeyUp || (key.Text == "k" && key.Mod == 0):
 			if m.CurrentIdx < len(m.Groups) {
 				group := m.Groups[m.CurrentIdx]
 				if proxy, ok := m.Proxies[group]; ok && len(proxy.All) > 0 {
@@ -73,7 +73,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 
-		case tea.KeyDown, tea.KeyCtrlJ:
+		case key.Code == tea.KeyDown || (key.Text == "j" && key.Mod == 0):
 			if m.CurrentIdx < len(m.Groups) {
 				group := m.Groups[m.CurrentIdx]
 				if proxy, ok := m.Proxies[group]; ok && len(proxy.All) > 0 {
@@ -86,13 +86,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 
-		case tea.KeyLeft:
+		case key.Code == tea.KeyLeft || (key.Text == "h" && key.Mod == 0):
 			return m.navigateGroup(-1)
 
-		case tea.KeyRight:
+		case key.Code == tea.KeyRight || (key.Text == "l" && key.Mod == 0):
 			return m.navigateGroup(1)
 
-		case tea.KeyEnter:
+		case key.Code == tea.KeyEnter:
 			if m.CurrentIdx < len(m.Groups) {
 				group := m.Groups[m.CurrentIdx]
 				if proxy, ok := m.Proxies[group]; ok && m.Cursor < len(proxy.All) {
@@ -106,44 +106,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 
-		case tea.KeyCtrlC:
+		case key.Text == "q" && key.Mod == 0:
 			return m, tea.Quit
-		}
 
-		switch msg.String() {
-		case "q":
-			return m, tea.Quit
-		case "r":
+		case key.Text == "r" && key.Mod == 0:
 			m.Loading = true
 			return m, LoadProxiesCmd(m.Client)
-		case "h":
-			return m.navigateGroup(-1)
-		case "l":
-			return m.navigateGroup(1)
-		case "k":
-			if m.CurrentIdx < len(m.Groups) {
-				group := m.Groups[m.CurrentIdx]
-				if proxy, ok := m.Proxies[group]; ok && len(proxy.All) > 0 {
-					if m.Cursor > 0 {
-						m.Cursor--
-						m.updateLastCursorProxy()
-						m.adjustViewport()
-					}
-				}
-			}
-			return m, nil
-		case "j":
-			if m.CurrentIdx < len(m.Groups) {
-				group := m.Groups[m.CurrentIdx]
-				if proxy, ok := m.Proxies[group]; ok && len(proxy.All) > 0 {
-					if m.Cursor < len(proxy.All)-1 {
-						m.Cursor++
-						m.updateLastCursorProxy()
-						m.adjustViewport()
-					}
-				}
-			}
-			return m, nil
 		}
 	}
 	return m, nil

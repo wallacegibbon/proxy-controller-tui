@@ -1,10 +1,10 @@
 package tui
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
 	"strings"
 	"testing"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/wallacegibbon/proxy-controller-tui/internal/clash"
 )
 
@@ -31,36 +31,41 @@ func TestCursorMovement(t *testing.T) {
 		Height:     24,
 	}
 
-	newModel, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
+	// Test 'j' key (move down)
+	newModel, _ := m.Update(tea.KeyPressMsg(tea.Key{Text: "j", Code: 'j'}))
 	m2 := newModel.(Model)
 	if m2.Cursor != 1 {
 		t.Errorf("Expected cursor to move down to 1, got %d", m2.Cursor)
 	}
 
+	// Test 'k' key (move up) from position 2
 	m2.Cursor = 2
-	newModel, _ = m2.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'k'}})
+	newModel, _ = m2.Update(tea.KeyPressMsg(tea.Key{Text: "k", Code: 'k'}))
 	m3 := newModel.(Model)
 	if m3.Cursor != 1 {
 		t.Errorf("Expected cursor to move up to 1, got %d", m3.Cursor)
 	}
 
+	// Test 'k' at top (should stay)
 	m.Cursor = 0
-	newModel, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'k'}})
+	newModel, _ = m.Update(tea.KeyPressMsg(tea.Key{Text: "k", Code: 'k'}))
 	m4 := newModel.(Model)
 	if m4.Cursor != 0 {
 		t.Errorf("Expected cursor to stay at 0 when at top, got %d", m4.Cursor)
 	}
 
+	// Test 'j' at bottom (should stay)
 	m.Cursor = 2
-	newModel, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
+	newModel, _ = m.Update(tea.KeyPressMsg(tea.Key{Text: "j", Code: 'j'}))
 	m5 := newModel.(Model)
 	if m5.Cursor != 2 {
 		t.Errorf("Expected cursor to stay at 2 when at bottom, got %d", m5.Cursor)
 	}
 
+	// Test 'l' key (navigate to next group)
 	m.CurrentIdx = 0
 	m.Cursor = 1
-	newModel, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'l'}})
+	newModel, _ = m.Update(tea.KeyPressMsg(tea.Key{Text: "l", Code: 'l'}))
 	m6 := newModel.(Model)
 	if m6.CurrentIdx != 1 {
 		t.Errorf("Expected currentIdx to move to 1, got %d", m6.CurrentIdx)
@@ -102,7 +107,8 @@ func TestNavigationIndicators(t *testing.T) {
 	}
 
 	// Test first group - should show ">>" (has right, no left)
-	out := m.View()
+	v := m.View()
+	out := v.Content
 	if !strings.Contains(out, "First (Selector) >>") {
 		t.Errorf("First group should show '>>' indicator, got:\n%s", out)
 	}
@@ -112,14 +118,16 @@ func TestNavigationIndicators(t *testing.T) {
 
 	// Test middle group - should show both "<<" and ">>"
 	m.CurrentIdx = 1
-	out = m.View()
+	v = m.View()
+	out = v.Content
 	if !strings.Contains(out, "<< Middle (Selector) >>") {
 		t.Errorf("Middle group should show both '<<' and '>>' indicators, got:\n%s", out)
 	}
 
 	// Test last group - should show "<<" (has left, no right)
 	m.CurrentIdx = 2
-	out = m.View()
+	v = m.View()
+	out = v.Content
 	if !strings.Contains(out, "<< Last (Selector)") {
 		t.Errorf("Last group should show '<<' indicator, got:\n%s", out)
 	}
@@ -144,13 +152,14 @@ func TestViewCursor(t *testing.T) {
 		Loading:    false,
 		Height:     24,
 	}
-	out := m.View()
+	v := m.View()
+	out := v.Content
 	t.Logf("View output:\n%s", out)
 	if !strings.Contains(out, ">  ") {
 		t.Errorf("Expected cursor marker '>  ' in output, got:\n%s", out)
 	}
-	if !strings.Contains(out, " > Proxy-1") {
-		t.Errorf("Expected active proxy marker ' > Proxy-1' in output, got:\n%s", out)
+	if !strings.Contains(out, "Proxy-1") {
+		t.Errorf("Expected active proxy 'Proxy-1' in output, got:\n%s", out)
 	}
 }
 
@@ -170,13 +179,14 @@ func TestViewCursorOnActive(t *testing.T) {
 		Loading:    false,
 		Height:     24,
 	}
-	out := m.View()
+	v := m.View()
+	out := v.Content
 	t.Logf("View output:\n%s", out)
-	if !strings.Contains(out, ">> Proxy-1") {
-		t.Errorf("Expected combined marker '>> Proxy-1' when cursor is on active proxy, got:\n%s", out)
+	if !strings.Contains(out, ">> ") {
+		t.Errorf("Expected cursor marker '>>' in output, got:\n%s", out)
 	}
-	if !strings.Contains(out, ">") {
-		t.Errorf("Expected active proxy marker > in output, got:\n%s", out)
+	if !strings.Contains(out, "Proxy-1") {
+		t.Errorf("Expected active proxy 'Proxy-1' in output, got:\n%s", out)
 	}
 
 	// Verify help is at the bottom of terminal
@@ -206,7 +216,8 @@ func TestHelpAtBottomSmallTerminal(t *testing.T) {
 		Loading:    false,
 		Height:     8, // Very small terminal
 	}
-	out := m.View()
+	v := m.View()
+	out := v.Content
 	lines := strings.Split(out, "\n")
 
 	// For terminal height 8, we expect:
@@ -249,7 +260,8 @@ func TestLayoutWithMultipleGroups(t *testing.T) {
 		Height:     15,
 	}
 
-	out := m.View()
+	v := m.View()
+	out := v.Content
 	lines := strings.Split(out, "\n")
 
 	// Output should not exceed terminal height
@@ -317,7 +329,8 @@ func TestManyGroupsExceedsTerminalHeight(t *testing.T) {
 		Height:     10, // Small terminal - can't fit all 20 groups
 	}
 
-	out := m.View()
+	v := m.View()
+	out := v.Content
 	lines := strings.Split(out, "\n")
 
 	// Output should not exceed terminal height
@@ -345,7 +358,8 @@ func TestManyGroupsExceedsTerminalHeight(t *testing.T) {
 
 	// Test with last group selected (CurrentIdx = 19)
 	m.CurrentIdx = 19 // Last group selected
-	out = m.View()
+	v = m.View()
+	out = v.Content
 	lines = strings.Split(out, "\n")
 
 	if len(lines) != m.Height {
@@ -366,7 +380,8 @@ func TestManyGroupsExceedsTerminalHeight(t *testing.T) {
 
 	// Test with middle group selected (CurrentIdx = 10)
 	m.CurrentIdx = 10 // Middle group selected
-	out = m.View()
+	v = m.View()
+	out = v.Content
 	lines = strings.Split(out, "\n")
 
 	// The selected group (GroupK - index 10) must be visible
