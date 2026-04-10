@@ -193,11 +193,18 @@ func (m *Model) adjustViewport() {
 
 	// Calculate max visible proxies based on terminal height
 	// Footer takes: help (1 row)
-	availableRows := m.Height - len(m.Groups) - minHelpRows
-	if availableRows < 1 {
-		availableRows = 1
+	// We can show at most (Height - 1) lines total (leaving 1 for help)
+	// Minus 1 for the selected group header
+	availableHeight := m.Height - minHelpRows
+	maxProxyLines := availableHeight - 1
+	if maxProxyLines < 1 {
+		maxProxyLines = 1
 	}
-	visibleCount := availableRows
+
+	visibleCount := maxProxyLines
+	if visibleCount > len(proxy.All) {
+		visibleCount = len(proxy.All)
+	}
 
 	if m.Cursor < m.ViewportOffset {
 		m.ViewportOffset = m.Cursor
