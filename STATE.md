@@ -18,6 +18,9 @@ Last updated: 2026-02-14
 - [x] Smart cursor positioning (preserved across reloads)
 - [x] Fix scrolling issue when groups exceed terminal height (2026-02-14)
 - [x] Add navigation indicators (`<<`/`>>`) on selected group (2026-02-14)
+- [x] Remove help bar and status message to simplify UI (2026-02-14)
+- [x] Remove mode indicator line (only using rule mode) (2026-02-14)
+- [x] Simplify view to only show selected group (small screen style) (2026-02-14)
 
 ## Pending Tasks
 (none)

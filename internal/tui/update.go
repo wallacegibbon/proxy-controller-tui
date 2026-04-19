@@ -2,6 +2,7 @@ package tui
 
 import (
 	tea "charm.land/bubbletea/v2"
+	"github.com/wallacegibbon/proxy-controller-tui/internal/clash"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -10,6 +11,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Loading = false
 		m.Err = msg
 		return m, nil
+
+	case resetFixedMsg:
+		m.Loading = false
+		// Reload proxies after reset attempt
+		return m, LoadProxiesCmd(m.Client)
 
 	case tea.WindowSizeMsg:
 		m.Height = msg.Height
@@ -112,9 +118,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Text == "r" && key.Mod == 0:
 			m.Loading = true
 			return m, LoadProxiesCmd(m.Client)
+
+		case key.Text == "a" && key.Mod == 0:
+			// Reset fixed proxy for URLTest groups (restore auto-selection)
+			if m.CurrentIdx < len(m.Groups) {
+				group := m.Groups[m.CurrentIdx]
+				if proxy, ok := m.Proxies[group]; ok && proxy.Type == "URLTest" {
+					if proxy.Fixed != "" {
+						m.Loading = true
+						return m, resetFixedCmd(m.Client, group)
+					}
+				}
+			}
+			return m, nil
 		}
 	}
 	return m, nil
+}
+
+func resetFixedCmd(client *clash.Client, groupName string) tea.Cmd {
+	return func() tea.Msg {
+		err := client.ResetFixedProxy(groupName)
+		return resetFixedMsg{
+			groupName: groupName,
+			err:       err,
+		}
+	}
 }
 
 func (m *Model) navigateGroup(direction int) (tea.Model, tea.Cmd) {
@@ -159,12 +188,7 @@ func (m *Model) adjustViewport() {
 		return
 	}
 
-	// Calculate max visible proxies based on terminal height
-	// Footer takes: help (1 row)
-	// We can show at most (Height - 1) lines total (leaving 1 for help)
-	// Minus 1 for the selected group header
-	availableHeight := m.Height - minHelpRows
-	maxProxyLines := availableHeight - 1
+	maxProxyLines := m.Height - 1
 	if maxProxyLines < 1 {
 		maxProxyLines = 1
 	}
@@ -191,11 +215,4 @@ func (m *Model) adjustViewport() {
 	if m.ViewportOffset > maxOffset {
 		m.ViewportOffset = maxOffset
 	}
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }

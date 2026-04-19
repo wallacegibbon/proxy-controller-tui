@@ -32,6 +32,7 @@ type Proxy struct {
 	Name    string                 `json:"name"`
 	Type    string                 `json:"type"`
 	Now     string                 `json:"now"`
+	Fixed   string                 `json:"fixed"`
 	All     []string               `json:"all"`
 	History []ProxyHistory         `json:"history"`
 	Uptime  string                 `json:"uptime"`
@@ -215,4 +216,43 @@ func (c *Client) TestDelay(groupName, proxyName string, testURL string) (int, er
 	}
 
 	return result["delay"], nil
+}
+
+// ResetFixedProxy clears the 'fixed' field on a URLTest group to restore auto-selection.
+// Uses DELETE method on the proxy group endpoint.
+func (c *Client) ResetFixedProxy(groupName string) error {
+	if mockMode {
+		c.mockProxiesMu.Lock()
+		defer c.mockProxiesMu.Unlock()
+
+		if proxy, ok := c.mockProxies[groupName]; ok {
+			// In mock mode, simulate clearing the fixed field
+			proxy.Fixed = ""
+			c.mockProxies[groupName] = proxy
+			return nil
+		}
+		return fmt.Errorf("group %s not found", groupName)
+	}
+
+	url := c.baseURL + proxiesPath + "/" + groupName
+
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+	c.addAuthHeader(req)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to reset fixed proxy: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// DELETE returns 204 No Content on success
+	if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	return fmt.Errorf("failed to reset fixed proxy (status %d): %s", resp.StatusCode, string(body))
 }

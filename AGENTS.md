@@ -30,19 +30,18 @@ MOCK_CLASH=1 proxy-controller-tui
 - `←/h` / `→/l`: Previous/Next group
 - `↑/k` / `↓/j`: Previous/Next proxy
 - `Enter`: Select proxy
+- `a`: Reset to auto-selection (for URLTest groups with `[fixed]`)
 - `r`: Refresh, `q`: Quit
 
 ## UI Features
 - Uses alternate screen buffer for proper display cleanup on exit
-- Small terminal support with dynamic viewport calculation
-- Beautiful turquoise background (color 45) for all groups, selected group in white
-- Active proxy marked with `>` in orange (color 208), cursor marked with `>` in cyan (color 51), or `>>` when cursor is on active proxy
-- Inline position indicator `(x/xx)` shows current cursor position
-- Proper multi-byte character support for Chinese/English names
-- Group type displayed in parentheses after group name (e.g., "MyGroup (Selector)")
-- Help text fixed at bottom: `[←h]Prev [→l]Next  [↑k]↑ [↓j]↓  [Ent]Select  [r]Reload  [q]Quit`
-- Top group always on top line, no gaps between unselected groups
-- Bottom group directly above help line with proper padding distribution
+- Single group view: shows only the selected group with its proxies
+- Navigation indicators `<<`/`>>` show if there are groups to the left/right
+- Beautiful turquoise background (color 45), selected group in white
+- Active proxy marked with `>` in orange (color 208), cursor in cyan (color 51)
+- Position indicator `(x/xx)` when proxy list exceeds screen height
+- Group type displayed after name (e.g., "MyGroup (Selector)")
+- `[fixed]` indicator in red when URLTest group is pinned
 
 ## Agent Instructions
 - **Read STATE.md** at the start of every conversation

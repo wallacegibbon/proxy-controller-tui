@@ -11,6 +11,11 @@ import (
 
 type errMsg error
 
+type resetFixedMsg struct {
+	groupName string
+	err       error
+}
+
 func (m Model) Init() tea.Cmd {
 	return LoadProxiesCmd(m.Client)
 }
@@ -21,7 +26,7 @@ type proxiesLoadedMsg struct {
 }
 
 const (
-	minHelpRows = 1 // help text only
+	minHelpRows = 0 // no help bar
 )
 
 var (
@@ -32,7 +37,6 @@ var (
 	activeProxyStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("86")).Bold(true)
 	activeProxyMarkStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("208")).Bold(true)
 	cursorStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("51")).Bold(true)
-	helpStyle            = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
 	separatorStyle       = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 )
 

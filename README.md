@@ -10,6 +10,8 @@ A modern, compact terminal user interface (TUI) for managing Clash/Mihomo proxy 
 
 - **Modern TUI Interface**: Clean, compact design with enhanced visual styling
 - **Proxy Management**: Select proxies from Selector and URLTest groups
+- **URLTest Fixed Indicator**: Shows `[fixed]` when a URLTest group has been manually pinned
+- **Auto-Selection Reset**: Press `a` to restore auto-selection for pinned URLTest groups
 - **Smart Navigation**: Vim-style (h/j/k/l) and arrow key support
 - **Viewport Scrolling**: Handles large proxy lists efficiently (20 items visible)
 - **API Authentication**: Support for Mihomo secret tokens
@@ -76,8 +78,15 @@ Ensure your proxy server is running and accessible at this endpoint.
 | `↑` / `k` | Previous proxy in group |
 | `↓` / `j` | Next proxy in group |
 | `Enter` | Select current proxy |
+| `a` | Reset to auto-selection (URLTest groups with `[fixed]`) |
 | `r` | Reload proxy list |
 | `q` / `Ctrl+C` | Quit |
+
+### URLTest Groups and Auto-Selection
+
+When you manually select a proxy from a **URLTest** (auto-select) group, Mihomo "pins" that proxy with a `fixed` field, disabling automatic selection. The TUI shows a **`[fixed]`** indicator (in red) next to the group name.
+
+Press `a` to restore auto-selection. This clears the `fixed` field using the Mihomo API's `DELETE` method on the proxy group endpoint, allowing the group to automatically select the best proxy based on latency tests again.
 
 ## Requirements
 

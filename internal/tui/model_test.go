@@ -8,8 +8,113 @@ import (
 	"github.com/wallacegibbon/proxy-controller-tui/internal/clash"
 )
 
+func TestURLTestFixedIndicator(t *testing.T) {
+	// Test that URLTest groups show [fixed] indicator when Fixed field is set
+	m := Model{
+		Proxies: map[string]clash.Proxy{
+			"Auto": {
+				Name:  "Auto",
+				Type:  "URLTest",
+				Now:   "Auto-2",
+				Fixed: "Auto-2",
+				All:   []string{"Auto-1", "Auto-2", "Auto-3", "Auto-4"},
+			},
+		},
+		Groups:     []string{"Auto"},
+		CurrentIdx: 0,
+		Cursor:     0,
+		Loading:    false,
+		Height:     24,
+	}
+
+	v := m.View()
+	out := v.Content
+	t.Logf("View output:\n%s", out)
+
+	// Should show [fixed] indicator for URLTest group with fixed proxy
+	if !strings.Contains(out, "Auto (URLTest)") {
+		t.Errorf("Expected group name with type 'Auto (URLTest)' in output")
+	}
+
+	// Check for fixed indicator (in styled form)
+	if !strings.Contains(out, "[fixed]") {
+		t.Errorf("Expected '[fixed]' indicator in output for URLTest group with fixed proxy")
+	}
+
+}
+
+func TestURLTestWithoutFixed(t *testing.T) {
+	// Test that URLTest groups without Fixed don't show [fixed] indicator
+	m := Model{
+		Proxies: map[string]clash.Proxy{
+			"Auto": {
+				Name:  "Auto",
+				Type:  "URLTest",
+				Now:   "Auto-2",
+				Fixed: "",
+				All:   []string{"Auto-1", "Auto-2", "Auto-3", "Auto-4"},
+			},
+		},
+		Groups:     []string{"Auto"},
+		CurrentIdx: 0,
+		Cursor:     0,
+		Loading:    false,
+		Height:     24,
+	}
+
+	v := m.View()
+	out := v.Content
+	t.Logf("View output:\n%s", out)
+
+	// Should NOT show [fixed] indicator
+	if strings.Contains(out, "[fixed]") {
+		t.Errorf("Should NOT show '[fixed]' indicator for URLTest group without fixed proxy")
+	}
+
+	// Should NOT show "↩ Auto" reset option
+	if strings.Contains(out, "Auto (restore auto-selection)") {
+		t.Errorf("Should NOT show reset option for URLTest group without fixed proxy")
+	}
+}
+
+func TestResetFixedKeyBinding(t *testing.T) {
+	// Test pressing 'a' key on URLTest group with fixed proxy
+	m := Model{
+		Client: clash.NewClient(""),
+		Proxies: map[string]clash.Proxy{
+			"Auto": {
+				Name:  "Auto",
+				Type:  "URLTest",
+				Now:   "Auto-2",
+				Fixed: "Auto-2",
+				All:   []string{"Auto-1", "Auto-2", "Auto-3", "Auto-4"},
+			},
+		},
+		Groups:     []string{"Auto"},
+		CurrentIdx: 0,
+		Cursor:     0,
+		Loading:    false,
+		Height:     24,
+	}
+
+	// Press 'a' key to reset fixed
+	newModel, cmd := m.Update(tea.KeyPressMsg(tea.Key{Text: "a", Code: 'a'}))
+	m2 := newModel.(Model)
+
+	// Should be loading after pressing 'a'
+	if !m2.Loading {
+		t.Errorf("Expected Loading to be true after pressing 'a' on URLTest group with fixed proxy")
+	}
+
+	// Should have a command to execute
+	if cmd == nil {
+		t.Errorf("Expected a command to be returned after pressing 'a'")
+	}
+}
+
 func TestCursorMovement(t *testing.T) {
 	m := Model{
+		Client: clash.NewClient(""),
 		Proxies: map[string]clash.Proxy{
 			"Proxy": {
 				Name: "Proxy",
@@ -189,123 +294,10 @@ func TestViewCursorOnActive(t *testing.T) {
 		t.Errorf("Expected active proxy 'Proxy-1' in output, got:\n%s", out)
 	}
 
-	// Verify help is at the bottom of terminal
-	lines := strings.Split(out, "\n")
-	if len(lines) > m.Height {
-		t.Errorf("Output exceeds terminal height: got %d lines, terminal height is %d", len(lines), m.Height)
-	}
-	lastLine := lines[len(lines)-1]
-	if !strings.Contains(lastLine, "[q]Quit") {
-		t.Errorf("Help message not on last line, got: %q", lastLine)
-	}
-}
-
-func TestHelpAtBottomSmallTerminal(t *testing.T) {
-	m := Model{
-		Proxies: map[string]clash.Proxy{
-			"Proxy": {
-				Name: "Proxy",
-				Type: "Selector",
-				Now:  "Proxy-1",
-				All:  []string{"Proxy-1", "Proxy-2"},
-			},
-		},
-		Groups:     []string{"Proxy"},
-		CurrentIdx: 0,
-		Cursor:     0,
-		Loading:    false,
-		Height:     8, // Very small terminal
-	}
-	v := m.View()
-	out := v.Content
-	lines := strings.Split(out, "\n")
-
-	// For terminal height 8, we expect:
-	// - 1 group line
-	// - 2 proxy lines
-	// - Some padding
-	// - 1 help line
-	// Total should be 8
-	if len(lines) != m.Height {
-		t.Errorf("Expected output to be exactly %d lines (terminal height), got %d", m.Height, len(lines))
-		t.Logf("Output:\n%s", out)
-	}
-
-	lastLine := lines[len(lines)-1]
-	if !strings.Contains(lastLine, "[q]Quit") {
-		t.Errorf("Help message not on last line, got: %q", lastLine)
-	}
-}
-
-func TestLayoutWithMultipleGroups(t *testing.T) {
-	m := Model{
-		Proxies: map[string]clash.Proxy{
-			"Proxy": {
-				Name: "Proxy",
-				Type: "Selector",
-				Now:  "Proxy-1",
-				All:  []string{"Proxy-1", "Proxy-2"},
-			},
-			"Auto": {
-				Name: "Auto",
-				Type: "URLTest",
-				Now:  "Auto-1",
-				All:  []string{"Auto-1", "Auto-2"},
-			},
-		},
-		Groups:     []string{"Proxy", "Auto"},
-		CurrentIdx: 0, // Proxy is selected
-		Cursor:     0,
-		Loading:    false,
-		Height:     15,
-	}
-
-	v := m.View()
-	out := v.Content
-	lines := strings.Split(out, "\n")
-
-	// Output should not exceed terminal height
-	if len(lines) > m.Height {
-		t.Errorf("Output exceeds terminal height: got %d lines, terminal height is %d", len(lines), m.Height)
-	}
-
-	// Help should be on last line
-	lastLine := lines[len(lines)-1]
-	if !strings.Contains(lastLine, "[q]Quit") {
-		t.Errorf("Help message not on last line, got: %q", lastLine)
-	}
-
-	// Groups should be in order (Proxy then Auto) with types
-	foundProxy := false
-	foundAuto := false
-	for i, line := range lines {
-		if strings.Contains(line, "Proxy") && strings.Contains(line, "(Selector)") && foundProxy == false {
-			foundProxy = true
-			// Next line(s) should be proxies
-			if i+1 < len(lines) && strings.Contains(lines[i+1], "Proxy-") {
-				// Good, proxies follow the group
-			}
-		}
-		if strings.Contains(line, "Auto") && strings.Contains(line, "(URLTest)") && foundAuto == false {
-			foundAuto = true
-			// Auto should appear after Proxy
-			if !foundProxy {
-				t.Errorf("Expected 'Proxy' to appear before 'Auto'")
-			}
-		}
-	}
-
-	if !foundProxy {
-		t.Errorf("Expected group 'Proxy' to be in output")
-	}
-	if !foundAuto {
-		t.Errorf("Expected group 'Auto' to be in output")
-	}
 }
 
 func TestManyGroupsExceedsTerminalHeight(t *testing.T) {
-	// Test case: more groups than terminal lines
-	// The selected group should always be visible
+	// Test case: many groups, but only the selected group is shown
 	groups := []string{}
 	proxies := map[string]clash.Proxy{}
 	groupNames := []string{"GroupA", "GroupB", "GroupC", "GroupD", "GroupE", "GroupF", "GroupG", "GroupH", "GroupI", "GroupJ", "GroupK", "GroupL", "GroupM", "GroupN", "GroupO", "GroupP", "GroupQ", "GroupR", "GroupS", "GroupT"}
@@ -323,76 +315,46 @@ func TestManyGroupsExceedsTerminalHeight(t *testing.T) {
 	m := Model{
 		Proxies:    proxies,
 		Groups:     groups,
-		CurrentIdx: 0, // First group selected
+		CurrentIdx: 0,
 		Cursor:     0,
 		Loading:    false,
-		Height:     10, // Small terminal - can't fit all 20 groups
+		Height:     10,
 	}
 
 	v := m.View()
 	out := v.Content
 	lines := strings.Split(out, "\n")
 
-	// Output should not exceed terminal height
-	if len(lines) != m.Height {
-		t.Errorf("Expected output to be exactly %d lines, got %d", m.Height, len(lines))
+	// Output should not exceed terminal height (accounting for trailing newline)
+	if len(lines) > m.Height+1 {
+		t.Errorf("Output exceeds terminal height: got %d lines, terminal height is %d", len(lines)-1, m.Height)
 	}
 
 	// The selected group (GroupA) must be visible
-	foundGroupA := false
-	for _, line := range lines {
-		if strings.Contains(line, "GroupA") {
-			foundGroupA = true
-			break
-		}
-	}
-	if !foundGroupA {
-		t.Errorf("Selected group 'GroupA' should be visible when it is selected, but not found in output:\n%s", out)
+	if !strings.Contains(out, "GroupA") {
+		t.Errorf("Selected group 'GroupA' should be visible:\n%s", out)
 	}
 
-	// Help should be on last line
-	lastLine := lines[len(lines)-1]
-	if !strings.Contains(lastLine, "[q]Quit") {
-		t.Errorf("Help message not on last line, got: %q", lastLine)
+	// Other groups should NOT be visible
+	if strings.Contains(out, "GroupB") {
+		t.Errorf("Other groups should NOT be visible when GroupA is selected:\n%s", out)
 	}
 
 	// Test with last group selected (CurrentIdx = 19)
-	m.CurrentIdx = 19 // Last group selected
+	m.CurrentIdx = 19
 	v = m.View()
 	out = v.Content
-	lines = strings.Split(out, "\n")
 
-	if len(lines) != m.Height {
-		t.Errorf("Expected output to be exactly %d lines, got %d", m.Height, len(lines))
-	}
-
-	// The selected group (GroupT) must be visible
-	foundGroupT := false
-	for _, line := range lines {
-		if strings.Contains(line, "GroupT") {
-			foundGroupT = true
-			break
-		}
-	}
-	if !foundGroupT {
-		t.Errorf("Selected group 'GroupT' should be visible when it is selected, but not found in output:\n%s", out)
+	if !strings.Contains(out, "GroupT") {
+		t.Errorf("Selected group 'GroupT' should be visible:\n%s", out)
 	}
 
 	// Test with middle group selected (CurrentIdx = 10)
-	m.CurrentIdx = 10 // Middle group selected
+	m.CurrentIdx = 10
 	v = m.View()
 	out = v.Content
-	lines = strings.Split(out, "\n")
 
-	// The selected group (GroupK - index 10) must be visible
-	foundGroupK := false
-	for _, line := range lines {
-		if strings.Contains(line, "GroupK") {
-			foundGroupK = true
-			break
-		}
-	}
-	if !foundGroupK {
-		t.Errorf("Selected group 'GroupK' should be visible when it is selected, but not found in output:\n%s", out)
+	if !strings.Contains(out, "GroupK") {
+		t.Errorf("Selected group 'GroupK' should be visible:\n%s", out)
 	}
 }
